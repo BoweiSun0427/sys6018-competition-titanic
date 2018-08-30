@@ -1,0 +1,22 @@
+library(tidyverse)
+library(dplyr)
+
+train <- read.csv('train.csv')
+test <- read.csv('test.csv')
+gendersub <- read.csv('gender_submission.csv')
+
+train[,c(3,5,12)] <- lapply(train[,c(3,5,12)], as.factor)
+
+train.lg1 <- glm(Survived ~ Pclass + Sex + Age + SibSp + Parch, data = train, family = 'binomial')
+
+test[,c(2,4,11)] <- lapply(test[,c(2,4,11)], as.factor)
+
+probs<-as.vector(predict(train.lg1,newdata=test, type="response"))
+preds <- rep(0,418)  
+preds[probs>0.5] <- 1 
+
+test$Survived <- NA
+test$Survived <- c(preds)
+
+result <- test[c(1,12)]
+write.csv(result,file = 'bs7md.csv',row.names = FALSE)
